@@ -254,11 +254,15 @@ if torch.cuda.is_available():
 total_batch_size = 524288 # 2**19, 0.5M tokens per batch
 B = 16 # micro batch size
 T = 1024 #sequence length
-assert total_batch_size % (B * T) == 0, "total_batch_size must be divisible by B * T"
-grad_accum_steps = total_batch_size // (B * T)
-print(f"total desired batch size: {total_batch_size}")
-print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
+assert total_batch_size % (B * T * ddp_world_size) == 0, "total_batch_size must be divisible by B * T * ddp_world_size"
+grad_accum_steps = total_batch_size // (B * T * ddp_world_size)
+if master_process:
+    print(f"total desired batch size: {total_batch_size}")
+    print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
 
+print("I am GPU", ddp_rank, "of", ddp_world_size, "on device", device)
+
+import sys; sys.exit(0)
 num_return_sequences = 5
 max_lenght = 30
 
